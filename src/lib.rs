@@ -1,5 +1,5 @@
 extern crate serde;
-extern crate toml;
+pub extern crate toml;
 #[macro_use]
 extern crate lazy_static;
 
@@ -37,7 +37,7 @@ pub fn get_config_dir() -> String {
 }
 
 
-fn init<'de, T>(filename: &str, config: T) -> File where T: Deserialize<'de> + Serialize + WriteConfig {
+pub fn init<'de, T>(filename: &str, config: T) -> File where T: Deserialize<'de> + Serialize + WriteConfig {
     let path_config_file = path_config_file(filename);
     let config_file: File;
 
@@ -58,7 +58,7 @@ fn init<'de, T>(filename: &str, config: T) -> File where T: Deserialize<'de> + S
     config_file
 }
 
-fn error_handler<T>(config: serde::export::Result<T, toml::de::Error>) -> T where T: self::serde::export::fmt::Debug {
+pub fn error_handler<T>(config: serde::export::Result<T, toml::de::Error>) -> T where T: self::serde::export::fmt::Debug {
     if config.is_err() {
         let error = &config.unwrap_err().inner;
         match error.kind {
@@ -89,7 +89,7 @@ fn path_config_file(filename: &str) -> PathBuf {
     path_config_file
 }
 
-trait WriteConfig {
+pub trait WriteConfig {
     fn write(&self);
 }
 
