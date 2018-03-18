@@ -77,13 +77,13 @@ pub fn error_handler<T>(config: serde::export::Result<T, toml::de::Error>) -> T 
     config.unwrap()
 }
 
-fn path_config_dir() -> PathBuf {
+pub fn path_config_dir() -> PathBuf {
     let mut path_config_dir = home_dir().unwrap();
     path_config_dir.push(get_config_dir());
     path_config_dir
 }
 
-fn path_config_file(filename: &str) -> PathBuf {
+pub fn path_config_file(filename: &str) -> PathBuf {
     let mut path_config_file = path_config_dir();
     path_config_file.push(filename);
     path_config_file
