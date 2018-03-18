@@ -1,0 +1,12 @@
+[package]
+name = "easy_toml_config"
+version = "0.1.0"
+authors = ["dennis"]
+
+[lib]
+crate-type = ["rlib"]
+
+[dependencies]
+serde = "*"
+toml = { git = "https://github.com/dvarum12/toml-rs.git" }
+lazy_static = "*"
