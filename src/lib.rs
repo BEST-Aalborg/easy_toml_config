@@ -27,6 +27,10 @@ pub fn set_config_dir(path: String) -> bool {
     }
 }
 
+pub fn set_config_dir_as_path(path: PathBuf) -> bool {
+    set_config_dir(path.to_str().unwrap().to_string())
+}
+
 pub fn get_config_dir() -> String {
     let conf = CONFIG_FOLDER.lock().unwrap();
     if conf.is_none() {
