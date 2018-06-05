@@ -17,6 +17,10 @@ lazy_static! {
     static ref CONFIG_FOLDER: Mutex<Option<String>> = Mutex::new(None);
 }
 
+pub enum Error {
+    DirNeverSpecified
+}
+
 pub fn set_config_dir(path: String) -> bool {
     let mut conf = CONFIG_FOLDER.lock().unwrap();
     if conf.is_none() {
@@ -31,22 +35,29 @@ pub fn set_config_dir_as_path(path: PathBuf) -> bool {
     set_config_dir(path.to_str().unwrap().to_string())
 }
 
-pub fn get_config_dir() -> String {
+pub fn get_config_dir() -> Result<String, Error> {
     let conf = CONFIG_FOLDER.lock().unwrap();
     if conf.is_none() {
-        panic!("The function set_config_dir, must be run ones before you can the function get_config_dir is called");
+        Err(Error::DirNeverSpecified)
     } else {
-        return conf.clone().unwrap();
+        return Ok(conf.clone().unwrap());
     }
 }
 
 
-pub fn init<'de, T>(filename: &str, config: T) -> File where T: Deserialize<'de> + Serialize + WriteConfig {
-    let path_config_file = path_config_file(filename);
+pub fn init<'de, T>(filename: &str, config: T) -> Result<File, Error> where T: Deserialize<'de> + Serialize + WriteConfig {
+    let path_config_file = match path_config_file(filename) {
+        Ok(path) => path,
+        Err(e) => return Err(e),
+    };
+
     let config_file: File;
 
     let path_config_dir = path_config_dir();
-    create_dir_all(path_config_dir.as_path()).expect(&format!("Failed to create the directory '{}'", path_config_file.to_str().unwrap()));
+    match path_config_dir {
+        Ok(path) => create_dir_all(path.as_path()).expect(&format!("Failed to create the directory '{}'", path_config_file.to_str().unwrap())),
+        Err(e) => return Err(e),
+    }
 
     if path_config_file.exists() {
         if path_config_file.is_file() {
@@ -59,7 +70,7 @@ pub fn init<'de, T>(filename: &str, config: T) -> File where T: Deserialize<'de>
         ::std::process::exit(1);
     }
 
-    config_file
+    Ok(config_file)
 }
 
 pub fn error_handler<T>(config: serde::export::Result<T, toml::de::Error>) -> T where T: self::serde::export::fmt::Debug {
@@ -81,28 +92,22 @@ pub fn error_handler<T>(config: serde::export::Result<T, toml::de::Error>) -> T 
     config.unwrap()
 }
 
-pub fn path_config_dir() -> PathBuf {
-    let mut path_config_dir = home_dir().unwrap();
-    path_config_dir.push(get_config_dir());
-    path_config_dir
+pub fn path_config_dir() -> Result<PathBuf, Error> {
+    get_config_dir().and_then(|dir| {
+        let mut path_config_dir = home_dir().unwrap();
+        path_config_dir.push(dir);
+        Ok(path_config_dir)
+    })
 }
 
-pub fn path_config_file(filename: &str) -> PathBuf {
-    let mut path_config_file = path_config_dir();
-    path_config_file.push(filename);
-    path_config_file
+pub fn path_config_file(filename: &str) -> Result<PathBuf, Error> {
+    path_config_dir().and_then(|path| {
+        let mut path_config_file = path;
+        path_config_file.push(filename);
+        Ok(path_config_file)
+    })
 }
 
 pub trait WriteConfig {
     fn write(&self);
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn it_works() {
-        assert_eq!(2+2, 4);
-    }
 }
