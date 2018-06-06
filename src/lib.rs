@@ -45,7 +45,7 @@ pub fn get_config_dir() -> Result<String, Error> {
 }
 
 
-pub fn init<'de, T>(filename: &str, config: T) -> Result<File, Error> where T: Deserialize<'de> + Serialize + WriteConfig {
+pub fn init<'de, T>(filename: &str, config: &T) -> Result<File, Error> where T: Deserialize<'de> + Serialize + WriteConfig {
     let path_config_file = match path_config_file(filename) {
         Ok(path) => path,
         Err(e) => return Err(e),
