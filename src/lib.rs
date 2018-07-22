@@ -17,6 +17,7 @@ lazy_static! {
     static ref CONFIG_FOLDER: Mutex<Option<String>> = Mutex::new(None);
 }
 
+#[derive(Debug)]
 pub enum Error {
     DirNeverSpecified
 }
