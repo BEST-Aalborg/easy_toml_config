@@ -79,7 +79,10 @@ pub fn error_handler<T>(config: serde::export::Result<T, toml::de::Error>) -> T 
         let error = &config.unwrap_err().inner;
         match error.kind {
             toml::de::ErrorKind::Custom => {
-                println!("You have to add the {}, in the section [{}] of the config file", error.message, error.key.first().unwrap());
+                match error.key.first() {
+                    Some(key) => println!("You have to add the {}, in the section [{}] of the config file", error.message, key),
+                    None => println!("You have to add the {}, in the config file", error.message),
+                }
             }
             _ => {
                 println!("-=( Un-handled error )=-");
